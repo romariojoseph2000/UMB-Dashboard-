@@ -1,0 +1,68 @@
+# Load required libraries
+library(shiny)
+library(shinydashboard)
+library(ggplot2)
+
+# Define UI
+ui <- dashboardPage(
+  dashboardHeader(title = "Pressure Check Study Dashboard"),
+  dashboardSidebar(
+    sidebarMenu(
+      menuItem("Summary Stats", tabName = "summary", icon = icon("dashboard")),
+      menuItem("Visualizations", tabName = "viz", icon = icon("chart-bar"))
+    )
+  ),
+  dashboardBody(
+    tabItems(
+      tabItem(tabName = "summary",
+              fluidRow(
+                valueBox(204, "Total Screened Participants", icon = icon("users"), color = "aqua"),
+                valueBox(50, "Languages Spoken", icon = icon("language"), color = "yellow"),
+                valueBox("White & Black", "Most Prevalent Race/Ethnicity", icon = icon("user-circle"), color = "purple"),
+                valueBox("18-25 yrs", "Most Screened Age Group", icon = icon("user"), color = "green")
+              )
+      ),
+      
+      tabItem(tabName = "viz",
+              fluidRow(
+                box(title = "Language Distribution", width = 6, plotOutput("langPlot")),
+                box(title = "BP Reading Frequency", width = 6, plotOutput("bpPlot"))
+              )
+      )
+    )
+  )
+)
+
+# Define server logic
+server <- function(input, output) {
+  
+  # Language Distribution Pie Chart
+  output$langPlot <- renderPlot({
+    lang_df <- data.frame(
+      Language = c("English", "Spanish", "Other"),
+      Count = c(48, 2, 0)  # You can update 'Other' if you have more languages
+    )
+    
+    ggplot(lang_df, aes(x = "", y = Count, fill = Language)) +
+      geom_col() +
+      coord_polar(theta = "y") +
+      theme_void() +
+      labs(title = "Languages Spoken")
+  })
+  
+  # BP Reading Frequency Bar Chart
+  output$bpPlot <- renderPlot({
+    bp_df <- data.frame(
+      Frequency = c("Always", "Never", "Sometimes"),
+      Count = c(9, 3, 4)
+    )
+    
+    ggplot(bp_df, aes(x = Frequency, y = Count, fill = Frequency)) +
+      geom_bar(stat = "identity") +
+      theme_minimal() +
+      labs(title = "BP Reading Frequency", x = "Frequency", y = "Count")
+  })
+}
+
+# Run the application 
+shinyApp(ui = ui, server = server)
